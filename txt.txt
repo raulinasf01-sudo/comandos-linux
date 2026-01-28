@@ -1,0 +1,105 @@
+SCRIPT DE COMANDOS – MODULO 1
+==================================================
+
+Comandos usados Practica 1: Instalación del Sistema Operativo
+==================================================
+
+# Mostrar fecha y hora del sistema
+date
+
+# Ver hostname actual
+hostname
+
+# Cambiar hostname por la matrícula (sin guion)
+hostnamectl set-hostname TU_MATRICULA
+
+# Verificar hostname
+hostname
+
+
+Comandos usados Practica 2: Configuración de parámetros de red
+==================================================
+
+# Mostrar interfaces de red
+ip a
+
+nmtui interfaz grafica
+
+# -------------------------
+# CONFIGURAR DNS GOOGLE
+# -------------------------
+
+
+# Probar conectividad
+ping -c 4 google.com
+
+
+Comandos usados Practica 3: Gestión de Usuarios y Grupos
+==================================================
+
+# Crear usuario con tu nombre
+useradd Adrian_Alcantara
+passwd Adrian_Alcantara
+
+# Agregar usuario al grupo sudoers (wheel)
+usermod -aG wheel raul
+
+# Ver grupos del usuario
+groups raul
+
+# Crear grupo guest
+groupadd guest
+
+# Crear usuario invitado
+useradd invitado
+passwd invitado
+
+# Agregar usuario al grupo guest
+usermod -aG guest invitado
+
+# Verificar grupo
+groups invitado
+
+# Eliminar usuario invitado
+userdel invitado
+
+# Eliminar grupo guest
+groupdel guest
+
+
+Comandos usados Practica 4: Gestión de Permisos de Archivos
+==================================================
+
+# Crear carpeta materia
+mkdir materia
+
+# Entrar a la carpeta
+cd materia
+
+# Crear y editar archivo con vi
+vi estudiante.txt
+
+# Ver contenido del archivo
+cat estudiante.txt
+
+# Permisos solo para el propietario (rwx------)
+chmod 700 estudiante.txt
+
+# Ver permisos
+ls -l estudiante.txt
+
+# Permisos solo para el grupo (---rwx---)
+chmod 070 estudiante.txt
+
+# Ver permisos
+ls -l estudiante.txt
+
+# Crear carpeta materia2
+cd ..
+mkdir materia2
+
+# Copiar archivo a materia2
+cp materia/estudiante.txt materia2/
+
+# Eliminar carpeta materia con todo su contenido
+rm -rf materia
