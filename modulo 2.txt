@@ -1,0 +1,69 @@
+SCRIPT DE COMANDOS – MODULO 2
+==================================================
+
+Comandos usados Practica 1
+==================================================
+sudo yum update -y
+yum repolist
+sudo yum install -y git python3
+
+python3 --version
+git clone https://github.com/aristocratos/bashtop.git
+cd bashtop
+sudo make uninstall
+sudo rm -f /usr/local/bin/bashtop
+rm -rf ~/.config/bashtop
+sudo yum autoremove -y
+
+
+
+Comandos usados Practica 2
+==================================================
+
+# Mostrar fecha y hora del sistema
+date
+
+sudo crontab -e
+0 23 * * * /usr/bin/yum update -y
+
+0 3 * * 0 /sbin/reboot
+
+sudo yum install at -y
+sudo systemctl start atd
+sudo systemctl enable atd
+
+ls /tmp
+
+echo "em -rf /tmp/*" | at now + 1 minute
+
+luego de 1 minuto
+
+ls /tmp
+
+Comandos usados Practica 3: 
+==================================================
+lsblk
+sudo fdisk /dev/sdb
+n
+p
+1
+enter
+enter
+w
+
+sudo mkfs.ext4 /dev/sdb1
+mkdir ~/Escritorio/disco23
+sudo mount /dev/sdb1 ~/Escritorio/disco23
+
+df -h
+
+cd ~Escritorio/disco23
+touch AdrianAlcantara.txt
+ls
+
+sudo umount ~/Escritorio/disco23
+sudo mount /dev/sdb1 /mnt
+cd /mnt
+ls
+
+
