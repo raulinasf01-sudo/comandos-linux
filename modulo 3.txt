@@ -1,0 +1,76 @@
+SCRIPT DE COMANDOS – MODULO 3
+==================================================
+
+Comandos usados Practica 1
+==================================================
+nano /etc/default/grub
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+init=/bin/bash
+mount -o remount,rw /
+passwd root
+touch /.autorelabel
+exece /sbin
+
+
+Comandos usados Practica 2
+==================================================
+
+nano respaldo.sh
+#!/bin/bash
+
+FECHA=$(date +"%d-%m-%Y-%H-%M")
+ARCHIVO="backup-$FECHA.tar.gz"
+
+tar -czvf $ARCHIVO /home/$USER
+
+echo "Respaldo creado correctamente: $ARCHIVO"
+
+chmod +x respaldo.sh
+./respaldo.sh
+
+ls
+
+nano red.sh
+#!/bin/bash
+
+# Pedir nombre del archivo
+echo "Ingrese el nombre que desea para el archivo:"
+read NOMBRE
+
+# Guardar resultado en el escritorio
+ifconfig > /home/$USER/Escritorio/$NOMBRE.txt
+
+echo "Archivo creado en el Escritorio con el nombre $NOMBRE.txt"
+
+chmod +x red.sh
+
+./red.sh
+
+
+
+
+
+Comandos usados Practica 3: 
+==================================================
+ping 192.168.1.33
+sudo dnf install -y openssh-server
+sudo systemctl enable sshd
+sudo systemctl start sshd
+
+sudo firewall-cmd --permanent --add-service=ssh
+sudo firewall-cmd –reload
+sudo systemctl status sshd
+
+ssh ralenxander@192.168.1.33
+
+ssh-keygen
+
+type C:\Users\PC\.ssh\id_ed25519.pub
+mkdir -p ~/.ssh
+nano ~/.ssh/authorized_keys
+
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+
+
