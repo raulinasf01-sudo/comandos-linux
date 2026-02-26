@@ -1,0 +1,122 @@
+PRACTICA 1 – Servidor HTTP con NGINX (1 punto)
+
+Instalaremos NGINX en lugar de Apache.
+
+🔹 1️⃣ Instalar NGINX
+sudo dnf install nginx -y
+
+Habilitar e iniciar:
+
+sudo systemctl enable nginx
+sudo systemctl start nginx
+sudo systemctl status nginx
+
+Permitir puertos en firewall:
+
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-port=8080/tcp
+sudo firewall-cmd --reload
+🔹 PARTE A – Website “Hola Mundo” (Puerto 80)
+2️⃣ Crear carpeta del sitio
+sudo mkdir -p /var/www/hola
+3️⃣ Crear archivo HTML
+sudo nano /var/www/hola/index.html
+
+Contenido:
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hola</title>
+</head>
+<body>
+<h1>Hola Mundo</h1>
+</body>
+</html>
+
+Dar permisos:
+
+sudo chown -R nginx:nginx /var/www/hola
+sudo chmod -R 755 /var/www/hola
+4️⃣ Crear Host Virtual en NGINX (Puerto 80)
+
+Crear archivo:
+
+sudo nano /etc/nginx/conf.d/hola.conf
+
+Contenido:
+
+server {
+    listen 80;
+    server_name localhost;
+
+    root /var/www/hola;
+    index index.html;
+}
+
+Probar configuración:
+
+sudo nginx -t
+
+Reiniciar:
+
+sudo systemctl restart nginx
+
+Probar en navegador:
+
+http://192.168.2.128
+
+Debe mostrar:
+
+Hola Mundo
+🔹 PARTE B – Website con tus datos (Puerto 8080)
+5️⃣ Crear carpeta
+sudo mkdir -p /var/www/datos
+6️⃣ Crear HTML
+sudo nano /var/www/datos/index.html
+
+Contenido:
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Datos</title>
+</head>
+<body>
+<h1>Raul Alexander</h1>
+<p>Matricula: 2023-XXXX</p>
+<p>Materia: Administración de Servicios Linux</p>
+</body>
+</html>
+
+Permisos:
+
+sudo chown -R nginx:nginx /var/www/datos
+sudo chmod -R 755 /var/www/datos
+7️⃣ Crear Host Virtual Puerto 8080
+sudo nano /etc/nginx/conf.d/datos.conf
+
+Contenido:
+
+server {
+    listen 8080;
+    server_name localhost;
+
+    root /var/www/datos;
+    index index.html;
+}
+
+Probar configuración:
+
+sudo nginx -t
+
+Reiniciar:
+
+sudo systemctl restart nginx
+🔹 Probar
+
+En navegador:
+
+http://192.168.2.128:8080
+
+Debe mostrar tu nombre y datos.
