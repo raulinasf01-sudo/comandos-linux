@@ -1,0 +1,39 @@
+Comandos utilizados, práctica laboratorio 5.2: Alta Disponibilidad y Clustering.
+
+INSTALACIÓN Y CONFIGURACIÓN DEL CLÚSTER
+
+============================================
+
+# Utilizaremos dos servidores Rocky, uno principal y uno secundario. En ambos servidores, habilitaremos los repositorios de alta disponibilidad:
+
+sudo dnf install -y epel-release
+sudo dnf config-manager --set-enabled highavailability
+sudo dnf config-manager --enable highavailability
+
+
+# Luego, en ambos servidores, instalamos Pacemaker y herramientas necesarias:
+
+sudo dnf install -y pacemaker pcs
+
+# Habilitamos y arrancamos los servicios en ambos servidores:
+
+sudo systemctl enable pcsd
+sudo systemctl start pcsd
+
+# Configuramos la contraseña del usuario, hacluster, en ambos servidores:
+
+sudo passwd hacluster
+
+# En ambos servidores, permitimos la comunicación del clúster a través del Firewall:
+
+sudo firewall-cmd --permanent --add-service=high-availability
+sudo firewall-cmd --reload
+
+# Luego, para autenticar los nodos y hosts entre sí, desde el servidor principal ejecutamos el siguiente comando utilizando las IP addresses de los servidores utilizados (ejecutar solo en uno de los servidores):
+
+sudo pcs cluster auth 192.168.2.131 192.168.2.132 -u hacluster
+sudo pcs host auth 192.168.2.131 192.168.100.132 -u hacluster
+
+# Tendremos que insertar la contraseña del usuario hacluster. Luego, creamos el clúster y asignamos un nombre (ejecutamos solo en un servidor):
+
+sudo pcs cluster setup cluster-wilkan 192.168.2.131 192.168.2.132
