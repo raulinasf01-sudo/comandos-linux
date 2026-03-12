@@ -1,0 +1,121 @@
+modulo 6.1 comandos
+
+Cifrado con GPG2
+
+# Instalar GPG2
+sudo dnf install gnupg2 -y
+
+# Crear un directorio y archivo
+mkdir ~/gpg_lab
+cd ~/gpg_lab
+echo "Este es mi archivo secreto" > secreto.txt
+
+# Cifrar el archivo con GPG2 (modo simétrico)
+gpg2 -c secreto.txt
+# Te pedirá una contraseña.
+
+# Intentar leerlo (verás que no se puede)
+cat secreto.txt.gpg
+
+# Descifrar el archivo
+gpg2 secreto.txt.gpg
+# Te pedirá la contraseña. 
+# Luego:
+cat secreto.txt
+# Aparecerá el texto original.
+
+
+modulo 6.2
+
+Verifica los servicios instalados
+sudo systemctl start httpd
+sudo systemctl start vsftpd
+sudo systemctl start sshd
+sudo systemctl enable httpd vsftpd sshd
+
+Confirma que están escuchando
+sudo ss -tulnp | grep -E '80|21|22'
+
+Bloquear los puertos con iptables
+sudo iptables -A INPUT -p tcp --dport 80 -j DROP
+sudo iptables -A INPUT -p tcp --dport 21 -j DROP
+sudo iptables -A INPUT -p tcp --dport 22 -j DROP
+sudo iptables -L -n
+
+Volver a habilitar
+sudo iptables -D INPUT -p tcp --dport 80 -j DROP
+sudo iptables -D INPUT -p tcp --dport 21 -j DROP
+sudo iptables -D INPUT -p tcp --dport 22 -j DROP
+
+Usando firewall-cmd (RHEL):
+sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
+sudo firewall-cmd --zone=public --add-port=21/tcp --permanent
+sudo firewall-cmd --zone=public --add-port=22/tcp --permanent
+sudo firewall-cmd --reload
+
+Bloquear:
+sudo firewall-cmd --zone=public --remove-port=80/tcp --permanent
+sudo firewall-cmd --zone=public --remove-port=21/tcp --permanent
+sudo firewall-cmd --zone=public --remove-port=22/tcp --permanent
+sudo firewall-cmd --reload
+
+modulo 6.3
+
+### Snort en redhat
+
+
+sudo dnf update && sudo yum update
+sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
+sudo yum upgrade -y
+sudo nano /etc/ld.so.conf.d/local.conf  
+      /usr/local/lib 
+      /usr/local/lib64 
+
+sudo dnf install flex bison gcc gcc-c++ make cmake autoconf libtool git nano unzip wget libpcap-devel pcre-devel libdnet-devel hwloc-devel openssl-devel zlib-devel luajit-devel pkgconfig pkgconf libunwind-devel libnfnetlink-devel libnetfilter_queue-devel libmnl-devel xz-devel gperftools libuuid-devel hyperscan hyperscan-devel  -y
+
+###instalar libdaq
+git clone https://github.com/snort3/libdaq.git 
+cd libdaq/ 
+./bootstrap 
+./configure && make && sudo make install 
+sudo ldconfig 
+cd ../ 
+
+## instalar snort
+git clone https://github.com/snort3/snort3.git 
+cd snort3 
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH 
+export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig:$PKG_CONFIG_PATH 
+export CFLAGS="-O3" 
+export CXXFLAGS="-O3 -fno-rtti" 
+./configure_cmake.sh --prefix=/usr/local/snort --enable-tcmalloc 
+
+cd build/ 
+make -j$(nproc) 
+sudo make -j$(nproc) install 
+cd ../../ 
+sudo ldconfig 
+/usr/local/snort/bin/snort
+sudo ln -s /usr/local/snort/bin/snort /usr/bin/snort
+snort -V
+
+## Configurar snort
+
+sudo nano /usr/local/snort/etc/snort/snort.lua
+       HOME_NET = '10.0.0.76/24'
+
+snort -T -c /usr/local/snort/etc/snort/snort.lua
+
+sudo ip link set dev ens160 promisc on
+
+sudo nano /usr/local/snort/etc/snort/local.rules
+       alert icmp any any -> any any ( msg:"ICMP Traffic Detected"; sid:10000001; metadata:policy security-ips alert; )
+
+sudo snort -c /usr/local/snort/etc/snort/snort.lua -R /usr/local/snort/etc/snort/local.rules -i ens160 -A alert_fast -s 65535 -k none
+
+
+reglas
+alert tcp any any -> $HOME_NET 21 (msg:"Acceso al puerto FTP 21"; sid:1000002; rev:1;)
+alert tcp any any -> $HOME_NET 80 (msg:"Acceso al puerto HTTP 80"; sid:1000004; rev:1;)
+alert tcp any any -> $HOME_NET 22 (msg:"Acceso al puerto SSH 22"; sid:1000003; rev:1;)
