@@ -1,0 +1,217 @@
+# PRACTICA 1 – NFS (Servidor Linux + Cliente Linux)
+
+# Instalar NFS en el Servidor
+sudo dnf install nfs-utils -y    # RHEL/CentOS/Fedora
+sudo systemctl enable --now nfs-server
+
+# Crear carpeta OS3 con 100 archivos
+sudo mkdir /srv/OS3
+cd /srv/OS3
+sudo touch Adrian{1..100}.txt
+
+# Asignar permisos
+sudo chown -R nobody:nobody /srv/OS3
+sudo chmod -R 755 /srv/OS3
+
+# Configurar exports
+# Editar:
+sudo nano /etc/exports
+# Agregar:
+/srv/OS3 *(rw,sync,no_root_squash)
+
+# Aplicar:
+sudo exportfs -ra
+
+# Activar el firewall y agregar los puertos
+sudo firewall-cmd --add-service=nfs --permanenet
+sudo firewall-cmd --add-service=npc-bind --permanenet
+sudo firewall-cmd --add-service=mountd --permanenet
+
+# Cliente Linux: instalar NFS
+sudo dnf install nfs-utils -y
+sudo mkdir /mnt/nfs
+
+# Descubrir export:
+showmount -e <IP_del_servidor>
+
+# Montar:
+sudo mount <IP_del_servidor>:/srv/OS3 /mnt/nfs
+
+# Ver archivos:
+ls /mnt/nfs
+
+# Montaje automático en /etc/fstab
+# Editar:
+sudo nano /etc/fstab
+# Agregar al final:
+<IP_del_servidor>:/srv/OS3   /mnt/nfs   nfs   defaults   0 0
+
+# Probar sin reiniciar:
+sudo mount -a
+
+# Reiniciar y comprobar:
+ls /mnt/nfs
+
+
+
+PRACTICA 2 – SAMBA (Linux Server + Windows Cliente)
+
+Instalar Samba
+sudo dnf install samba samba-common samba-client -y
+sudo systemctl enable --now smb nmb
+
+Crear carpeta compartida
+sudo mkdir /srv/samba
+sudo chmod 777 /srv/samba
+
+Crear archivos:
+sudo touch Adrian{1..100}.txt
+
+Crear usuario y grupo Samba
+sudo useradd sambauser
+sudo smbpasswd -a sambauser
+
+Configurar /etc/samba/smb.conf
+Editar:
+sudo nano /etc/samba/smb.conf
+Agregar al final:
+[OS3_SHARE]
+   path = /srv/samba
+   writable = yes
+   browsable = yes
+   valid users = sambauser
+   read only = no
+
+Reiniciar Samba:
+sudo systemctl restart smb
+
+Activar los puertos
+sudo firewall-cmd --add-port=137 --permanent
+sudo firewall-cmd --add-port=139 --permanent
+sudo firewall-cmd --add-port=445 --permanent
+sudo firewall-cmd --reload
+
+Desactivar la seguridad
+sudo setenforce 0
+
+
+En Windows: Mapear Unidad
+Abrir File Explorer
+Click derecho → Map network drive
+Drive: elegir letra
+Folder:
+\\<IP_DEL_SERVIDOR>\OS3_SHARE
+Usuario: sambauser
+Debes ver los 100 archivos.
+
+Modificar Adrian99 desde Windows
+Abrir el archivo adrian99.txt
+
+Escribir:
+el zumzum de la carabela
+Guardar
+
+En Linux verificar:
+cat /srv/samba/adrian99.txt
+
+
+INSTALACIÓN Y CONFIGURACIÓN DE SAMBA COMO CONTROLADOR DE DOMINIO ACTIVE DIRECTORY (OS3.INET)
+
+1. Preparación del sistema
+--------------------------
+hostnamectl set-hostname OS3.inet
+echo "192.168.100.73 OS3.inet" >> /etc/hosts   # poner la IP de su server
+dnf -y update
+dnf -y install epel-release
+sudo dnf config-manager --set-enabled powertools
+dnf update
+sudo dnf makecache
+dnf -y install wget tar gcc make python3-devel
+
+2. Descarga e instalación de Samba
+----------------------------------
+mkdir -p /samba && cd /samba
+wget https://download.samba.org/pub/samba/stable/samba-4.16.2.tar.gz
+tar -zxvf samba-4.16.2.tar.gz && cd samba-4.16.2/
+
+sudo dnf -y install \
+  docbook-style-xsl python3-markdown bison dbus-devel flex gdb \
+  gnutls-devel jansson-devel keyutils-libs-devel krb5-workstation \
+  libacl-devel libaio-devel libarchive-devel libattr-devel libblkid-devel \
+  libtasn1 libtasn1-tools libxml2-devel libxslt lmdb-devel openldap-devel \
+  pam-devel perl perl-ExtUtils-MakeMaker perl-Parse-Yapp popt-devel \
+  python3-cryptography python3-dns python3-gpg readline-devel rpcgen \
+  systemd-devel zlib-devel perl-JSON gpgme-devel screen
+
+./configure --prefix=/usr/local/samba --enable-fhs --with-ads --with-systemd
+make -j$(nproc)
+make install
+
+export PATH=/usr/local/samba/bin:/usr/local/samba/sbin:$PATH
+
+nano ~/.bash_profile 
+        PATH=$PATH:$HOME/bin:/usr/local/samba/bin:/usr/local/samba/sbin:$PATH
+        export PATH  
+nano ../.bash_profile
+        PATH=$PATH:$HOME/bin:/usr/local/samba/bin:/usr/local/samba/sbin:$PATH
+        export PATH
+
+sudo useradd lanegracubana
+sudo passwd lanegracubana   # Contraseña = tu matrícula
+sudo smbpasswd -a lanegracubana
+
+sudo systemctl stop smb nmb
+sudo systemctl disable smb nmb
+
+samba-tool domain provision --use-rfc2307 --interactive --option="interfaces= lo ens160" --option="bind interfaces only=yes"
+
+#Dominio: OS3.inet  
+#Nombre de dominio: OS3 
+#Nombre de controlador: dc  
+#Backend DNS: SAMBA_INTERNAL  
+#Contraseña: Teletubies123
+
+# inicia el servicio de samba con el siguiente comando
+sudo systemctl start samba
+sudo systemctl enable samba
+
+
+#Pruebas de DS
+ping google.com
+ping OS3.inet
+
+#Copiar el Archivo de Kerberos
+cp /usr/local/samba/var/lib/samba/private/krb5.conf /etc/krb5.conf
+
+#Agregar reglas al firewall
+firewall-cmd --permanent --add-service={ldap,ldaps,kerberos,dns}
+firewall-cmd --permanent --add-port={53,88,135,139,389,445,464,636,3268,3269}/tcp
+firewall-cmd --permanent --add-port={53,88,123,138,389,464}/udp
+firewall-cmd --reload
+
+# Agregar Registro DN maquina cliente
+###################IP DEl SERVER ################ IP VM WINDOWS ################                
+samba-tool dns add 192.168.100.10 OS3.inet www A 192.168.100.7 -U Administrator
+
+#### en la VM de windows###:
+
+## En la configuracion de al tarjeta de Red cambiar el DNS de la maquina a que apunte al servidor de linux
+#haga ping al dominio (OS3.inet) el ping debe de responder con al Ip der servidor
+
+Presiona Win + R, escribe sysdm.cpl y presiona Enter.
+Ir a "Nombre del equipo" > "Cambiar":
+
+Selecciona Miembro de un dominio e ingresa: os3.inet
+
+Usuario: Administrator
+Contraseña: Teletubies123
+
+
+
+
+
+
+
+
+
+
