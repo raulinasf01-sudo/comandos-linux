@@ -120,3 +120,53 @@ En navegador:
 http://192.168.2.128:8080
 
 Debe mostrar tu nombre y datos.
+
+## Práctica 2: Servidor de Correos (Postfix)
+
+**Paso 1: Instalar Postfix y Mailx**
+```bash
+sudo dnf install postfix mailx -y
+sudo systemctl enable --now postfix
+```
+
+**Paso 2: Enviar correo al maestro**
+*Asegúrate de reemplazar [Tu Nombre] y [Tu Matricula] en el comando:*
+```bash
+echo "Nombre: [Tu Nombre], Matricula: [Tu Matricula]" | mail -s "MambruSeFueALaGuerra" os3conadrian@gmail.com
+```
+
+===================================================================================================
+
+## Práctica 3: Servidor de Impresión (CUPS)
+
+### 3.1 Configuración en CentOS
+**Paso 1: Instalar CUPS y Impresora PDF**
+```bash
+sudo dnf install cups cups-pdf -y
+sudo systemctl enable --now cups
+```
+
+**Paso 2: Habilitar administración remota y compartir**
+```bash
+sudo cupsctl --remote-admin --remote-any --share-printers
+sudo firewall-cmd --permanent --add-port=631/tcp
+sudo firewall-cmd --reload
+```
+
+**Paso 3: Verificar nombre de la impresora**
+Accede desde tu navegador en Windows a `https://[IP_DE_TU_VM]:631/printers/`. Verás una llamada `PDF`.
+
+### 3.2 Configuración en Windows (PC Cliente)
+1.  Abra **Configuración** -> **Dispositivos** -> **Impresoras y escáneres**.
+2.  Haga clic en **Agregar una impresora o un escáner**.
+3.  Haga clic en **La impresora que deseo no está en la lista**.
+4.  Seleccione **Seleccionar una impresora compartida por nombre**.
+5.  Escriba la URL: `http://[IP_DE_TU_VM]:631/printers/PDF`
+6.  Haga clic en **Siguiente**. Si pide controlador, elija **Generic** -> **MS Publisher Imagesetter** o **Generic / Text Only**.
+
+### 3.3 Prueba de Impresión
+1.  Abra un documento de **Word**.
+2.  Vaya a **Archivo** -> **Imprimir**.
+3.  Seleccione la impresora que acaba de agregar (`PDF en [IP_DE_TU_VM]`).
+4.  Haga clic en **Imprimir**.
+5.  **Verificación en CentOS:** El archivo PDF aparecerá en `/var/spool/cups-pdf/ANONYMOUS/` o en la carpeta `PDF` de tu usuario.
