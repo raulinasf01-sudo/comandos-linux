@@ -38,7 +38,7 @@ Despliegue de una VM con Terraform en DigitalOcean.
 
 #En nuestro servidor RHEL Linux, ejecutamos:
    cat ~/.ssh/id_rsa.pub
-
+   cat ~/.ssh/id_ed25519.pub
 #Copiamos la salida del comando anterior (Si no existe, créala con ssh-keygen) y pégala en DigitalOcean.
 
 #Instalar Terraform en RHEL Linux
